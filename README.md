@@ -2,6 +2,10 @@
 This is an example of how to build a RESTful API that performs CRUD operations on a Sqlite database using Flask and the extension, Flask-RESTful.
 The particular application is creating a to-do list.
 
+
+# Link to my GitHub
+https://github.com/flysirin/todo_tasks_restful_api
+
 ## Contents:
 **app.py** - Defines the flask app, and the Flask RESTful api endpoints defined on top of it     
 **models.py** - Defines the data model, implemented with the Flask SQLAlchemy ORM    
@@ -52,8 +56,24 @@ curl -X PUT -u login:pass -H "Content-Type: application/json" -d '{"title": "Upd
 DELETE request:
 ```
 curl -X DELETE -u login:pass http://localhost:5000/todo/1
-```
+```  
 
+##Flask-RESTful:
+
+Simplicity and Structure: Flask-RESTful provides a straightforward way to structure RESTful APIs in Flask. It encourages a clear and consistent organization of resources using classes as resources.
+Request Parsing: The library comes with a built-in request parsing mechanism (reqparse), making it easier to handle and validate incoming JSON data or form data.
+Marshaling: Flask-RESTful includes support for object serialization, helping in transforming complex data types into JSON responses.
+Justification:
+
+Chose Flask-RESTful for its simplicity in structuring RESTful APIs and built-in tools like reqparse and marshaling, making it easier to handle and validate incoming requests and format responses consistently.
+
+##Flask-HTTPAuth:  
+
+Authentication Support: Flask-HTTPAuth simplifies the implementation of authentication mechanisms in Flask applications. It provides decorators for protecting specific routes or resources.
+Basic HTTP Authentication: If your project requires basic HTTP authentication, Flask-HTTPAuth seamlessly integrates with Flask applications.
+Customizable: It allows for customization, allowing you to implement authentication strategies that suit your project requirements.
+Justification:  
+Integrated Flask-HTTPAuth to easily implement authentication in our Flask project. It's support for various authentication mechanisms and customization options made it the right choice for securing our API endpoints.  
 
 
 **Flask-RESTful documentation**      
