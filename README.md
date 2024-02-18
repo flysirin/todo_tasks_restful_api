@@ -5,9 +5,9 @@ The particular application is creating a to-do list.
 ## Contents:
 **app.py** - Defines the flask app, and the Flask RESTful api endpoints defined on top of it     
 **models.py** - Defines the data model, implemented with the Flask SQLAlchemy ORM    
-**config.py** - Testing of API endpoints using Python unittest module
-**tests.py** - Configuration file with parameters loaded from **.env**
-**create_db.py** - Create database
+**config.py** - Testing of API endpoints using Python unittest module  
+**tests.py** - Configuration file with parameters loaded from **.env**  
+**create_db.py** - Create database  
 
 ## How to use:
 Change login, password, host, port, database name, if you need in   **.env**
@@ -19,11 +19,11 @@ pip install -r requirements.txt
 
 Create database
 ```
-python create_db.py
+python3 create_db.py
 ```
 Run server
 ```
-python app.py
+python3 app.py
 ```
 
 To access the api from the command line:
@@ -34,9 +34,14 @@ curl -u login:pass http://localhost:5000/todo/1
 
 ```
 
+GET all requests:  
+```
+curl -u login:pass http://localhost:5000/todo
+
+```
 POST request:
 ```
-curl -u login:pass http://localhost:5000/todo/ -X POST -H "Content-Type:application/json" -d '{"name":"New task","description":"ToDo something"}'
+curl -u login:pass http://localhost:5000/todo -X POST -H "Content-Type:application/json" -d '{"title":"New task","description":"ToDo something"}'
 ```
 
 PUT request:

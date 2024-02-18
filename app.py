@@ -50,7 +50,7 @@ class TaskListAPI(Resource):
     def post(self):
         args = self.reqparse.parse_args()
 
-        max_id = db.session.query(db.func.max(Tasks.id)).scalar()
+        max_id = db.session.query(db.func.max(Tasks.id)).scalar() or 0
         title = args.get('title', '')
         description = args.get('description', '')
         completed = args.get('completed', False)
