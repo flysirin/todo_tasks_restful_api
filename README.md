@@ -9,8 +9,9 @@ https://github.com/flysirin/todo_tasks_restful_api
 ## Contents:
 **app.py** - Defines the flask app, and the Flask RESTful api endpoints defined on top of it     
 **models.py** - Defines the data model, implemented with the Flask SQLAlchemy ORM    
-**config.py** - Testing of API endpoints using Python unittest module  
-**tests.py** - Configuration file with parameters loaded from **.env**  
+**config.py** - Configuration file with parameters loaded from **.env**   
+**tests.py** - Testing of API endpoints using Python unittest module   
+ 
 **create_db.py** - Create database  
 
 ## How to use:
