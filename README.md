@@ -1,5 +1,5 @@
 # Todo tasks RESTful API  
-This is an example of how to build a RESTful API that performs CRUD operations on a Sqlite database using Flask and the extension, Flask-RESTful.
+This is an example of how to build a RESTful API that performs CRUD operations on a MySQL database using Flask and the extension, Flask-RESTful.
 The particular application is creating a to-do list.
 
 
