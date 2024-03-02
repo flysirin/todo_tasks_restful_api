@@ -2,12 +2,12 @@ from flask import Flask, jsonify, make_response
 from flask_restful import Api, Resource, reqparse, marshal_with
 from flask_httpauth import HTTPBasicAuth
 from models import db, Tasks, task_fields
-from config import LOGIN, PASSWORD, DATABASE, HOST, PORT
+from config import LOGIN, PASSWORD, HOST, PORT, DB_NAME, DB_HOST, DB_PORT, DB_LOGIN, DB_PASS
 
 from datetime import datetime
 
 app = Flask(__name__, static_url_path="")
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)

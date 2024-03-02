@@ -4,3 +4,4 @@ Flask-HTTPAuth==4.8.0
 Flask-RESTful==0.3.10
 requests==2.31.0
 environs==9.5.0
+pymysql==1.1.0

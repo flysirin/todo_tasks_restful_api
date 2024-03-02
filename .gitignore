@@ -144,3 +144,6 @@ instance
 local.py
 templates
 .idea
+.env_old
+mysql_connect.py
+.env.example
