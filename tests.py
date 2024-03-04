@@ -1,15 +1,47 @@
 import unittest
+from pymysql.connections import Connection
 from app import app
 from models import db, Tasks
 import json
-from config import LOGIN, PASSWORD
+from config import LOGIN, PASSWORD, DB_LOGIN, DB_PASS, DB_HOST, DB_PORT
 from datetime import datetime
+from error_handlers import register_error_handlers
+
+DB_NAME = 'test_db'
+
+
+class TestDB(unittest.TestCase):
+    """Tests DB"""
+    auth_credentials = (LOGIN, PASSWORD)
+    register_error_handlers(app)
+
+    # def setUp(self):
+    #     """Stuff to do before every test."""
+    #     self.client = app.test_client()
+    #     app.config['TESTING'] = True
+    #     app.config['SQLALCHEMY_ECHO'] = True
+    #     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    def test(self):
+        # DB_PASS =
+        with Connection(host=DB_HOST,
+                        port=int(DB_PORT),
+                        user=DB_LOGIN,
+                        password='DB_PASS') as con:
+            cur = con.cursor()
+            # cur.execute(f"SELECT 1")
+            # cur.execute("SHOW DATABASES")
+            # for databases in cur:
+            #     print(databases)
+            # db.create_all()
+
 
 
 class TestAPI(unittest.TestCase):
     """Tests with DB."""
 
     auth_credentials = (LOGIN, PASSWORD)
+    register_error_handlers(app)
 
     def setUp(self):
         """Stuff to do before every test."""
@@ -17,6 +49,7 @@ class TestAPI(unittest.TestCase):
         self.client = app.test_client()
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_ECHO'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
         with app.app_context():
             db.drop_all()
@@ -191,6 +224,13 @@ class TestAPI(unittest.TestCase):
         result = self.client.get('/todo', auth=self.auth_credentials)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json, [])
+
+    # def test_db(self):
+    #     wrong_pass = 'passs'
+    #     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{wrong_pass}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    #     result = self.client.get("/todo/3", auth=self.auth_credentials)
+    #
+    #     self.assertEqual(result.status_code, 200)
 
 
 if __name__ == '__main__':

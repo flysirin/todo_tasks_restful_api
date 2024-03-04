@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, make_response
 from flask_restful import Api, Resource, reqparse, marshal_with
 from flask_httpauth import HTTPBasicAuth
+from sqlalchemy.exc import DataError
+
 from models import db, Tasks, task_fields
 from config import LOGIN, PASSWORD, HOST, PORT, DB_NAME, DB_HOST, DB_PORT, DB_LOGIN, DB_PASS
 from datetime import datetime
@@ -62,7 +64,9 @@ class TaskListAPI(Resource):
         try:
             db.session.add(task_add)
             db.session.commit()
-
+        except DataError as e:
+            db.session.rollback()
+            raise DataError(params=e.params, orig=e.orig, statement=e.statement)
         except BaseException as e:
             db.session.rollback()
             return make_response(jsonify({'message': str(e)}), 500)
@@ -99,6 +103,9 @@ class TaskAPI(Resource):
             task.updated_at = datetime.utcnow().replace(microsecond=0)
             db.session.commit()
 
+        except DataError as e:
+            db.session.rollback()
+            raise DataError(params=e.params, orig=e.orig, statement=e.statement)
         except BaseException as e:
             db.session.rollback()
             return make_response(jsonify({'message': str(e)}), 500)
