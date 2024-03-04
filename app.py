@@ -3,8 +3,9 @@ from flask_restful import Api, Resource, reqparse, marshal_with
 from flask_httpauth import HTTPBasicAuth
 from models import db, Tasks, task_fields
 from config import LOGIN, PASSWORD, HOST, PORT, DB_NAME, DB_HOST, DB_PORT, DB_LOGIN, DB_PASS
-
 from datetime import datetime
+from error_handlers import register_error_handlers
+
 
 app = Flask(__name__, static_url_path="")
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -115,6 +116,8 @@ class TaskAPI(Resource):
             return make_response(jsonify({'message': str(e)}), 500)
         return task
 
+
+register_error_handlers(app)
 
 api.add_resource(TaskListAPI, '/todo', endpoint='tasks')
 api.add_resource(TaskAPI, '/todo/<int:id>', endpoint='task')

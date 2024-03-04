@@ -16,11 +16,13 @@ class TestAPI(unittest.TestCase):
 
         self.client = app.test_client()
         app.config['TESTING'] = True
+        app.config['SQLALCHEMY_ECHO'] = True
 
         with app.app_context():
+            db.drop_all()
             db.create_all()
 
-            task_add = Tasks(id=1, title='New task 1.0', description='Create database SQLite')
+            task_add = Tasks(title='New task 1.0', description='Create database MySQL')
             db.session.add(task_add)
             db.session.commit()
 
@@ -38,7 +40,7 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         data = json.loads(result.data)
         self.assertEqual(data['title'], 'New task 1.0')
-        self.assertEqual(data['description'], 'Create database SQLite')
+        self.assertEqual(data['description'], 'Create database MySQL')
         self.assertEqual(data['completed'], False)
 
         try:

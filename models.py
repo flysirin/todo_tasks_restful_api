@@ -20,5 +20,5 @@ task_fields = {
     'completed': fields.Boolean,
     'created_at': fields.DateTime,
     'updated_at': fields.DateTime,
-    'uri': fields.Url('task'),
+    # 'uri': fields.Url('task'),
 }

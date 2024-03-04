@@ -15,7 +15,7 @@ https://github.com/flysirin/todo_tasks_restful_api
 **create_db.py** - Create database  
 
 ## How to use:
-Change login, password, host, port, database name, if you need in   **.env**
+Change login, password, host, port and database credential, if you need in   **.env**
 
 Install requirements
 ```
