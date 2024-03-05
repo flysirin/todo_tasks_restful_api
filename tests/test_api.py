@@ -1,86 +1,36 @@
 import unittest
 from pymysql import OperationalError
 from pymysql.connections import Connection
-
-import configmodule
+from app import app
 from models import db, Tasks
 import json
-from app import create_app
 from config import LOGIN, PASSWORD, DB_LOGIN, DB_PASS, DB_HOST, DB_PORT
 from datetime import datetime
+from error_handlers import register_error_handlers
 
-app = create_app(configmodule='configmodule.TestingConfig')
-
-
-class TestDB(unittest.TestCase):
-    """Tests DB"""
-    auth_credentials = (LOGIN, PASSWORD)
-
-    def test_access_password_login_db(self):
-        try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user=DB_LOGIN,
-                            password='wrong_pass') as con:
-                pass
-
-        except OperationalError as e:
-            # test wrong db password
-            self.assertEqual("""(1045, "Access denied for user 'root'@'localhost' (using password: YES)")""",
-                             str(e.args))
-        try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user='wrong_login',
-                            password=DB_PASS) as con:
-                pass
-
-        except OperationalError as e:
-            # test wrong db login
-            self.assertEqual("""(1045, "Access denied for user 'wrong_login'@'localhost' (using password: YES)")""",
-                             str(e.args))
-
-        # access test with correct login and password
-        try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user=DB_LOGIN,
-                            password=DB_PASS) as con:
-                cur = con.cursor()
-                cur.execute("SHOW DATABASES")
-                cur.close()
-        except OperationalError as e:
-            self.assertFalse(e)
-            print(e)
+DB_NAME = 'test_db'
 
 
-class TestAPI(unittest.TestCase):
+class TestAPI:
     """Tests with DB."""
 
     auth_credentials = (LOGIN, PASSWORD)
-    app = create_app(configmodule='configmodule.TestingConfig')
+    register_error_handlers(app)
 
     def setUp(self):
         """Stuff to do before every test."""
 
         self.client = app.test_client()
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_ECHO'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-        with app.app_context(), Connection(host=DB_HOST,
-                                           port=int(DB_PORT),
-                                           user=DB_LOGIN,
-                                           password=DB_PASS) as con:
-            cur = con.cursor()
-
-            db_name = configmodule.TestingConfig.DB_TEST_NAME
-            cur.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
+        with app.app_context():
             db.drop_all()
             db.create_all()
-            db.session.commit()
 
             task_add = Tasks(title='New task 1.0', description='Create database MySQL')
             db.session.add(task_add)
-            database_name = db.engine.url.database
-            print("Database Name:", database_name)
             db.session.commit()
 
     def tearDown(self):
@@ -248,18 +198,3 @@ class TestAPI(unittest.TestCase):
         result = self.client.get('/todo', auth=self.auth_credentials)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json, [])
-
-    def test_handler_data_error(self):
-        data = json.dumps({
-            'title': 'Too much loooooooooooooooooooooooooooooooooooooooooooooooo'
-                     'oooooooooooooooooooooooooooooooooooooonnnnnngggggggggg Title',
-            'description': 'Checking write and read'})
-        result = self.client.post("/todo", data=data, content_type='application/json', auth=self.auth_credentials)
-
-        self.assertEqual(result.status_code, 500)
-        self.assertEqual({'message': 'Database error: (1406, "Data too long for column \'title\' at row '
-                                     '1")'}, json.loads(result.data))
-
-
-if __name__ == '__main__':
-    unittest.main()

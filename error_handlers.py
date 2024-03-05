@@ -1,7 +1,7 @@
 from flask import jsonify, make_response
 import logging
 from sqlalchemy.exc import SQLAlchemyError, ProgrammingError, IntegrityError, \
-    DatabaseError, DataError, InternalError, NotSupportedError, InterfaceError
+    DatabaseError, DataError, InternalError, NotSupportedError, InterfaceError, OperationalError
 
 logging.basicConfig(level=logging.ERROR)
 logger_db_error = logging.getLogger(__name__)
@@ -48,6 +48,11 @@ def handle_interface_error(error: InterfaceError):
     return make_response(jsonify({'message': f'Database error: '}), 500)
 
 
+def handle_operational_error(error: OperationalError):
+    logger_db_error.error(f"{error.orig}")
+    # return make_response(jsonify({'message': f'Database error: '}), 500)
+
+
 def register_error_handlers(app):
     app.register_error_handler(DataError, handle_data_error)
     app.register_error_handler(ProgrammingError, handle_programming_error)
@@ -57,3 +62,4 @@ def register_error_handlers(app):
     app.register_error_handler(InternalError, handle_internal_error)
     app.register_error_handler(NotSupportedError, handle_not_supported_error)
     app.register_error_handler(InterfaceError, handle_interface_error)
+    app.register_error_handler(OperationalError, handle_operational_error)

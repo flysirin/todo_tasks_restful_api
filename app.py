@@ -2,20 +2,12 @@ from flask import Flask, jsonify, make_response
 from flask_restful import Api, Resource, reqparse, marshal_with
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy.exc import DataError
-
 from models import db, Tasks, task_fields
-from config import LOGIN, PASSWORD, HOST, PORT, DB_NAME, DB_HOST, DB_PORT, DB_LOGIN, DB_PASS
+from config import LOGIN, PASSWORD, HOST, PORT
 from datetime import datetime
 from error_handlers import register_error_handlers
 
 
-app = Flask(__name__, static_url_path="")
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_LOGIN}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db.init_app(app)
-
-api = Api(app)
 auth = HTTPBasicAuth()
 
 
@@ -124,10 +116,19 @@ class TaskAPI(Resource):
         return task
 
 
-register_error_handlers(app)
+def create_app(configmodule='configmodule.DevelopmentConfig'):
+    app = Flask(__name__)
+    app.config.from_object(configmodule)
 
-api.add_resource(TaskListAPI, '/todo', endpoint='tasks')
-api.add_resource(TaskAPI, '/todo/<int:id>', endpoint='task')
+    db.init_app(app)
+    api = Api(app)
+    register_error_handlers(app)
+
+    api.add_resource(TaskListAPI, '/todo', endpoint='tasks')
+    api.add_resource(TaskAPI, '/todo/<int:id>', endpoint='task')
+
+    return app
+
 
 if __name__ == '__main__':
-    app.run(debug=True, host=HOST, port=PORT)
+    create_app().run(debug=True, host=HOST, port=PORT)

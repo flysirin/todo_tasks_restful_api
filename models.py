@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 class Tasks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200))
+    title = db.Column(db.String(100))
     description = db.Column(db.Text)
     completed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -20,5 +20,4 @@ task_fields = {
     'completed': fields.Boolean,
     'created_at': fields.DateTime,
     'updated_at': fields.DateTime,
-    # 'uri': fields.Url('task'),
 }
