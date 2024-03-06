@@ -6,7 +6,7 @@ from models import db, Tasks, task_fields
 from config import LOGIN, PASSWORD, HOST, PORT
 from datetime import datetime
 from error_handlers import register_error_handlers
-
+import configmodule
 
 auth = HTTPBasicAuth()
 
@@ -116,9 +116,9 @@ class TaskAPI(Resource):
         return task
 
 
-def create_app(configmodule='configmodule.DevelopmentConfig'):
+def create_app(config_module):
     app = Flask(__name__)
-    app.config.from_object(configmodule)
+    app.config.from_object(config_module)
 
     db.init_app(app)
     api = Api(app)
@@ -131,4 +131,4 @@ def create_app(configmodule='configmodule.DevelopmentConfig'):
 
 
 if __name__ == '__main__':
-    create_app().run(debug=True, host=HOST, port=PORT)
+    create_app(configmodule.DevelopmentConfig).run(debug=True, host=HOST, port=PORT)

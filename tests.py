@@ -1,15 +1,12 @@
 import unittest
+import json
+from datetime import datetime
 from pymysql import OperationalError
 from pymysql.connections import Connection
-
-import configmodule
 from models import db, Tasks
-import json
 from app import create_app
+import configmodule
 from config import LOGIN, PASSWORD, DB_LOGIN, DB_PASS, DB_HOST, DB_PORT
-from datetime import datetime
-
-app = create_app(configmodule='configmodule.TestingConfig')
 
 
 class TestDB(unittest.TestCase):
@@ -18,10 +15,8 @@ class TestDB(unittest.TestCase):
 
     def test_access_password_login_db(self):
         try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user=DB_LOGIN,
-                            password='wrong_pass') as con:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user=DB_LOGIN, password='wrong_pass') as con:
                 pass
 
         except OperationalError as e:
@@ -29,10 +24,8 @@ class TestDB(unittest.TestCase):
             self.assertEqual("""(1045, "Access denied for user 'root'@'localhost' (using password: YES)")""",
                              str(e.args))
         try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user='wrong_login',
-                            password=DB_PASS) as con:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user='wrong_login', password=DB_PASS) as con:
                 pass
 
         except OperationalError as e:
@@ -42,10 +35,8 @@ class TestDB(unittest.TestCase):
 
         # access test with correct login and password
         try:
-            with Connection(host=DB_HOST,
-                            port=int(DB_PORT),
-                            user=DB_LOGIN,
-                            password=DB_PASS) as con:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user=DB_LOGIN, password=DB_PASS) as con:
                 cur = con.cursor()
                 cur.execute("SHOW DATABASES")
                 cur.close()
@@ -54,21 +45,86 @@ class TestDB(unittest.TestCase):
             print(e)
 
 
-class TestAPI(unittest.TestCase):
-    """Tests with DB."""
+class TestErrorDB(unittest.TestCase):
+    """Test errors DB with App"""
 
     auth_credentials = (LOGIN, PASSWORD)
-    app = create_app(configmodule='configmodule.TestingConfig')
+
+    def test_handler_database_not_exist(self):
+        app = create_app(configmodule.TestingConfig)
+        self.client = app.test_client()
+        with Connection(host=DB_HOST, port=int(DB_PORT),
+                        user=DB_LOGIN, password=DB_PASS) as con:
+            cur = con.cursor()
+
+            db_name = configmodule.TestingConfig.DB_TEST_NAME
+            cur.execute(f"DROP DATABASE IF EXISTS {db_name}")
+            cur.close()
+
+        result = self.client.get("/todo", auth=self.auth_credentials)
+
+        self.assertEqual(500, result.status_code)
+        self.assertEqual({'message': 'Database error'}, json.loads(result.data))
+
+    def test_handler_wrong_login_db(self):
+        wrong_login = "wrong_login"
+
+        class WrongLoginConfig(configmodule.TestingConfig):
+            SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://' \
+                                      f'{wrong_login}:{DB_PASS}@' \
+                                      f'{DB_HOST}:{DB_PORT}/test_mysql_db'
+
+        app = create_app(WrongLoginConfig)
+        self.client = app.test_client()
+        result = self.client.get('/todo', auth=self.auth_credentials)
+
+        self.assertEqual(500, result.status_code)
+        self.assertEqual({'message': 'Database error'}, json.loads(result.data))
+
+    def test_handler_wrong_password_db(self):
+        wrong_pass = "wrong_login"
+
+        class WrongPasswordConfig(configmodule.TestingConfig):
+            SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://' \
+                                      f'{DB_LOGIN}:{wrong_pass}@' \
+                                      f'{DB_HOST}:{DB_PORT}/test_mysql_db'
+
+        app = create_app(WrongPasswordConfig)
+        self.client = app.test_client()
+        result = self.client.get('/todo', auth=self.auth_credentials)
+
+        self.assertEqual(500, result.status_code)
+        self.assertEqual({'message': 'Database error'}, json.loads(result.data))
+
+    def test_handler_wrong_connection_to_db(self):
+        wrong_port = 8888
+
+        class WrongConnectionConfig(configmodule.TestingConfig):
+            SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://' \
+                                      f'{DB_LOGIN}:{DB_PASS}@' \
+                                      f'{DB_HOST}:{wrong_port}/test_mysql_db'
+
+        app = create_app(WrongConnectionConfig)
+        self.client = app.test_client()
+        result = self.client.get('/todo', auth=self.auth_credentials)
+
+        self.assertEqual(500, result.status_code)
+        self.assertEqual({'message': 'Database error'}, json.loads(result.data))
+
+
+class TestAPI(unittest.TestCase):
+    """Tests app with DB"""
+
+    app = create_app(config_module=configmodule.TestingConfig)
+    auth_credentials = (LOGIN, PASSWORD)
 
     def setUp(self):
         """Stuff to do before every test."""
 
-        self.client = app.test_client()
+        self.client = self.app.test_client()
 
-        with app.app_context(), Connection(host=DB_HOST,
-                                           port=int(DB_PORT),
-                                           user=DB_LOGIN,
-                                           password=DB_PASS) as con:
+        with self.app.app_context(), Connection(host=DB_HOST, port=int(DB_PORT),
+                                                user=DB_LOGIN, password=DB_PASS) as con:
             cur = con.cursor()
 
             db_name = configmodule.TestingConfig.DB_TEST_NAME
@@ -79,13 +135,11 @@ class TestAPI(unittest.TestCase):
 
             task_add = Tasks(title='New task 1.0', description='Create database MySQL')
             db.session.add(task_add)
-            database_name = db.engine.url.database
-            print("Database Name:", database_name)
             db.session.commit()
 
     def tearDown(self):
         """Stuff to do after every test."""
-        with app.app_context():
+        with self.app.app_context():
             db.session.remove()
             db.drop_all()
 
@@ -120,7 +174,7 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
 
         # Check for the item in the db by id
-        with app.app_context():
+        with self.app.app_context():
             task = Tasks.query.filter_by(id=2).first_or_404(description=f'Task with id {id} not found')
         self.assertIsNotNone(task, "Task with ID=2 not found in the database")
         self.assertEqual(task.title, 'Database setup')
@@ -205,7 +259,7 @@ class TestAPI(unittest.TestCase):
             }
         ]
 
-        with app.app_context():
+        with self.app.app_context():
             result = self.client.get('/todo', auth=self.auth_credentials)
             data = json.loads(result.data)
             self.assertEqual(result.status_code, 200)
@@ -250,6 +304,7 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(result.json, [])
 
     def test_handler_data_error(self):
+        """Test of an attempt to write a value in the title that is greater than expected"""
         data = json.dumps({
             'title': 'Too much loooooooooooooooooooooooooooooooooooooooooooooooo'
                      'oooooooooooooooooooooooooooooooooooooonnnnnngggggggggg Title',
@@ -260,6 +315,5 @@ class TestAPI(unittest.TestCase):
         self.assertEqual({'message': 'Database error: (1406, "Data too long for column \'title\' at row '
                                      '1")'}, json.loads(result.data))
 
-
-if __name__ == '__main__':
-    unittest.main()
+    if __name__ == '__main__':
+        unittest.main()
