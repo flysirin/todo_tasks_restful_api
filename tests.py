@@ -46,7 +46,7 @@ class TestDB(unittest.TestCase):
 
 
 class TestErrorDB(unittest.TestCase):
-    """Test errors DB with App"""
+    """Test error handlers DB with App"""
 
     auth_credentials = (LOGIN, PASSWORD)
 
