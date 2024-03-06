@@ -16,8 +16,6 @@ https://github.com/flysirin/todo_tasks_restful_api
 **tests.py** - Testing of API endpoints using Python unittest module   
 
 
-## Set up your database and launch it, more details here:
-
 ## How to use:
 
 Set up your database and launch it, more details here:  
