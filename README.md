@@ -7,13 +7,13 @@ The particular application is creating a to-do list. Flexible settings for datab
 https://github.com/flysirin/todo_tasks_restful_api
 
 ## Contents:
-**app.py** - Defines the flask app, and the Flask RESTful api endpoints defined on top of it     
-**models.py** - Defines the data model, implemented with the Flask SQLAlchemy ORM
-**error_handlers.py** - error handlers when working with the database
+**app.py** - Defines the flask app, and the Flask RESTful api endpoints defined on top of it      
+**models.py** - Defines the data model, implemented with the Flask SQLAlchemy ORM  
+**error_handlers.py** - error handlers when working with the database  
 **config.py** - Configuration file with parameters loaded from **.env**   
-**configmodule.py** - configuration classes for accessing the database and for flexible changes to server settings
-**create_db.py** - Create database  
-**tests.py** - Testing of API endpoints using Python unittest module   
+**configmodule.py** - configuration classes for accessing the database and for flexible changes to server settings  
+**create_db.py** - Create database    
+**tests.py** - Testing of API endpoints using Python unittest module     
 
 
 ## How to use:
@@ -70,7 +70,7 @@ DELETE request:
 curl -X DELETE -u login:pass http://localhost:5000/todo/1
 ```  
 
-##Flask-RESTful:
+## Flask-RESTful:
 
 Simplicity and Structure: Flask-RESTful provides a straightforward way to structure RESTful APIs in Flask. It encourages a clear and consistent organization of resources using classes as resources.
 Request Parsing: The library comes with a built-in request parsing mechanism (reqparse), making it easier to handle and validate incoming JSON data or form data.
@@ -79,7 +79,7 @@ Justification:
 
 Chose Flask-RESTful for its simplicity in structuring RESTful APIs and built-in tools like reqparse and marshaling, making it easier to handle and validate incoming requests and format responses consistently.
 
-##Flask-HTTPAuth:  
+## Flask-HTTPAuth:   
 
 Authentication Support: Flask-HTTPAuth simplifies the implementation of authentication mechanisms in Flask applications. It provides decorators for protecting specific routes or resources.
 Basic HTTP Authentication: If your project requires basic HTTP authentication, Flask-HTTPAuth seamlessly integrates with Flask applications.
@@ -97,7 +97,7 @@ in one app, but the docs were useful to refer to after looking at other examples
 https://flask-restful.readthedocs.io/en/latest/
 
 
-##Application Factories
+## Application Factories  
 1) Testing. You can have instances of the application with different settings to test every case.
 
 2) Multiple instances. Imagine you want to run different versions of the same application. Of course you could have 
