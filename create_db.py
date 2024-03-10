@@ -1,8 +1,9 @@
 from pymysql.connections import Connection
 from app import create_app, db
+from configmodule import DevelopmentConfig
 from config import DB_NAME, DB_HOST, DB_PORT, DB_LOGIN, DB_PASS
 
-app = create_app()
+app = create_app(DevelopmentConfig)
 try:
     with app.app_context(), Connection(host=DB_HOST,
                                        port=int(DB_PORT),
