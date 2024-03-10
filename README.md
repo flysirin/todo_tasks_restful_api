@@ -23,7 +23,7 @@ https://dev.mysql.com/doc/mysql-getting-started/en/
 
 Make sure, that you are using the correct credentials to access the database
 
-Change login, password, host, port and database credential, if you need in   **.env**
+Change login, password, host, port and database credential in   **.env**  
 
 **_Attention! Using configurations to set up a database like DevelopmentConfig, ProductionConfig in tests.py
 may lead to data deletion. Use TestingConfig or create your own setup classes for tests_**  

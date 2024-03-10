@@ -12,37 +12,77 @@ from config import LOGIN, PASSWORD, DB_LOGIN, DB_PASS, DB_HOST, DB_PORT
 class TestDB(unittest.TestCase):
     """Tests DB"""
     auth_credentials = (LOGIN, PASSWORD)
+    db_name = 'test_database'
 
     def test_access_password_login_db(self):
+
+        # test wrong db password
         try:
-            with Connection(host=DB_HOST, port=int(DB_PORT),
-                            user=DB_LOGIN, password='wrong_pass') as con:
-                pass
+            with self.assertRaises(OperationalError):
+                with Connection(host=DB_HOST, port=int(DB_PORT),
+                                user=DB_LOGIN, password='wrong_pass') as con:
+                    pass
+        except Exception as e:
+            self.fail(f"Fail test wrong_pass db: {e}")
 
-        except OperationalError as e:
-            # test wrong db password
-            self.assertEqual("""(1045, "Access denied for user 'root'@'localhost' (using password: YES)")""",
-                             str(e.args))
+        # test wrong db login
         try:
-            with Connection(host=DB_HOST, port=int(DB_PORT),
-                            user='wrong_login', password=DB_PASS) as con:
-                pass
+            with self.assertRaises(OperationalError):
+                with Connection(host=DB_HOST, port=int(DB_PORT),
+                                user='wrong_login', password=DB_PASS) as con:
+                    pass
+        except Exception as e:
+            self.fail(f"Fail test wrong_login db: {e}")
 
-        except OperationalError as e:
-            # test wrong db login
-            self.assertEqual("""(1045, "Access denied for user 'wrong_login'@'localhost' (using password: YES)")""",
-                             str(e.args))
-
-        # access test with correct login and password
+        # test create database
         try:
             with Connection(host=DB_HOST, port=int(DB_PORT),
                             user=DB_LOGIN, password=DB_PASS) as con:
                 cur = con.cursor()
-                cur.execute("SHOW DATABASES")
+                cur.execute(f"DROP DATABASE IF EXISTS {self.db_name}")
+                cur.execute(f"CREATE DATABASE IF NOT EXISTS {self.db_name}")
                 cur.close()
-        except OperationalError as e:
-            self.assertFalse(e)
-            print(e)
+
+        except Exception as e:
+            self.fail(f"Fail test create db: {e}")
+
+        # test write to database
+        try:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user=DB_LOGIN, password=DB_PASS, database=self.db_name) as con:
+                cur = con.cursor()
+                cur.execute("""CREATE TABLE todo_tasks(
+                                 id INT AUTO_INCREMENT PRIMARY KEY,
+                                 title VARCHAR(100),
+                                 description TEXT
+                                 );""")
+                cur.execute("""INSERT INTO todo_tasks VALUES(NULL, 'task_1', 'description_1');""")
+                con.commit()
+
+        except Exception as e:
+            self.fail(f"Fail test write to db: {e}")
+
+        # test read
+        try:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user=DB_LOGIN, password=DB_PASS, database=self.db_name) as con:
+                cur = con.cursor()
+                cur.execute("""SELECT title, description FROM todo_tasks""")
+                row = cur.fetchall()[0]
+                self.assertEqual(('task_1', 'description_1'), row)
+
+        except Exception as e:
+            self.fail(f"Fail test read from db: {e}")
+
+        # drop test database
+        try:
+            with Connection(host=DB_HOST, port=int(DB_PORT),
+                            user=DB_LOGIN, password=DB_PASS) as con:
+                cur = con.cursor()
+                cur.execute(f"DROP DATABASE IF EXISTS {self.db_name}")
+
+        except Exception as e:
+            self.fail(f"Fail drop db: {e}")
 
 
 class TestErrorDB(unittest.TestCase):
@@ -203,6 +243,7 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
 
         data = json.loads(result.data)
+
         self.assertEqual(data['title'], 'Database setup')
         self.assertEqual(data['description'], 'Checking write, read, update')
         self.assertEqual(data['completed'], True)
